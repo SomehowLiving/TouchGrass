@@ -357,7 +357,7 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
      */
     function removeFriend(address _friend) external {
         delete friendships[msg.sender][_friend];
-        // Note: This doesn't remove the reverse friendship - handle in frontend
+        // Note: This doesn't remove the reverse(since mutual) friendship - handle in frontend
     }
 
     // Admin functions
