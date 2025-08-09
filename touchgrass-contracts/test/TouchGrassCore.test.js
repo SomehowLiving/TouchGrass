@@ -46,7 +46,7 @@ describe("TouchGrass Contract Suite", function () {
     await touchGrassCore.setNFTContract(await touchGrassNFT.getAddress());
     await touchGrassNFT.setCoreContract(await touchGrassCore.getAddress());
 
-    console.log("Contracts deployed and linked successfully");
+    // console.log("Contracts deployed and linked successfully");
   });
 
   describe("Friendship Attestation", function () {
