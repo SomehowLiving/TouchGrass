@@ -29,43 +29,7 @@ Meet IRL → Verify Location → Collaborate → Mint NFT → Share Memory
 ---
 
 ## 🏗 MVP System Architecture
-
-```mermaid
-graph TB
-    subgraph "Frontend (MVP)"
-        A[Mobile App<br/>React Native + Expo]
-        B[Web App<br/>Next.js (Optional)]
-    end
-    
-    subgraph "Backend Services (MVP)"
-        C[API Gateway<br/>Express.js + TypeScript]
-        D[GPS Oracle<br/>Location Verification Service]
-        E[Relayer Service<br/>Gasless Transaction Handler]
-        F[IPFS Service<br/>Image & Metadata Storage]
-    end
-    
-    subgraph "Database (MVP)"
-        G[(PostgreSQL/MongoDB<br/>User Profiles & Events)]
-        H[(Redis<br/>Session Cache)]
-    end
-    
-    subgraph "Smart Contracts - Base L2"
-        I[TouchGrassCore<br/>Events & Friendships]
-        J[TouchGrassNFT<br/>Dynamic Memories]
-    end
-    
-    A --> C
-    C --> D
-    C --> E
-    C --> F
-    C --> G
-    C --> H
-    E --> I
-    I --> J
-    D --> I
-    F --> J
-```
-
+**Architecture flow**: - see [Architechture.md](touchgrass-flow.jpeg)
 ---
 
 ## 📱 MVP User Journey
