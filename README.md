@@ -502,7 +502,7 @@ Cost per active user: ~$0.145
 - **Contract Addresses**: [Coming after deployment]
 
 ### **Community**
-- **Twitter**: [@touchgrass_app](https://twitter.com/touchgrass_app)
+- **Twitter**: [@touchgrass_app](https://x.com/just_touchgrass)
 - **Mirror Blog**: [touchgrass.mirror.xyz](https://touchgrass.mirror.xyz)
 - **Feedback Form**: [feedback.touchgrass.xyz](https://feedback.touchgrass.xyz)
 
