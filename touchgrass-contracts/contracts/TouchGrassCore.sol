@@ -1,87 +1,87 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
+import "./TouchGrassNFT.sol";
 contract TouchGrassCore is Ownable, ReentrancyGuard {
     using Counters for Counters.Counter;
     using ECDSA for bytes32;
 
-    // Events (same as before)
+    // Events to notify off-chain
     event EventCreated(uint256 indexed eventId, address indexed creator, string name, uint256 timestamp);
     event FriendAttested(address indexed attester, address indexed friend, uint256 timestamp);
     event LocationVerified(address indexed user, uint256 indexed eventId, int256 lat, int256 lng);
     event MemoryMinted(uint256 indexed eventId, address indexed minter, uint256 tokenId);
     event EventDetailsStored(uint256 indexed eventId, string name, string location, address[] invitedFriends);
 
-    // Structs (same as before - but consider the packing optimization I mentioned)
+    // Structs
     struct GrassEvent {
         uint256 id;
         address creator;
-        uint128 scheduledTime;
-        uint128 createdAt;
-        int128 centerLat;
-        int128 centerLng;
-        uint32 radiusMeters;
-        bool isActive;
-        string name;
-        string location;
-        string ipfsHash;
-        address[] invitedFriends;
+        uint128 scheduledTime;  // when event is plsnned to happen
+        uint128 createdAt;  // time it was created
+        int128 centerLng;   // Longitude * 1e6 for precision
+        int128 centerLat;   // Latitude 
+        uint32 radiusMeters;    // Radius around center for valid location
+        bool isActive;  //Flag to check if its active
+        string name;    // event name
+        string location;    // Human readable
+        string ipfsHash;    // IPFS hash of collaborative memory after event
+        address[] invitedFriends;   // List of invited friends
     }
 
     struct LocationProof {
-        address user;
-        uint256 eventId;
-        int256 lat;
-        int256 lng;
-        uint256 timestamp;
-        bytes signature;
+        address user;   // who submitted
+        uint256 eventId;    // for what event
+        int256 lat;     // submitted lat
+        int256 lng;     //submitted lug
+        uint256 timestamp;  // when proof was submitted
+        bytes signature;    // GPS- signature(from oracle or off-chain relyer.. currently not used)
     }
 
     struct FriendshipAttestation {
-        address friend;
-        uint256 attestedAt;
-        bool isMutual;
-        uint256 interactionCount;
+        address friend;     // which friend attested
+        uint256 attestedAt;     // when did they
+        bool isMutual;      // are they mutual
+        uint256 interactionCount;       // tracking their interactions
     }
 
     struct UserProfile {
-        uint256 eventsAttended;
-        uint256 eventsCreated;
-        bool isVerified;
-        bytes32 deviceFingerprint;
+        uint256 eventsAttended;     // no. of events attended     
+        uint256 eventsCreated;      // no. of events created
+        bool isVerified;        // user verication flag- unused as of now
+        bytes32 deviceFingerprint;      // Sybil resistance - unused as of now
     }
 
-    // State variables (same as before)
-    Counters.Counter private _eventIds;
+    // State variables 
+    Counters.Counter private _eventIds;     // counter for unique event IDs
     
-    mapping(uint256 => GrassEvent) public events;
-    mapping(address => mapping(address => FriendshipAttestation)) public friendships;
-    mapping(uint256 => mapping(address => LocationProof)) public locationProofs;
-    mapping(uint256 => address[]) public eventAttendees;
-    mapping(address => uint256[]) public userEvents;
-    mapping(address => UserProfile) public userProfiles;
-    mapping(bytes32 => address) public deviceToUser;
-    mapping(uint256 => mapping(address => bool)) public hasAttended; // Add this to prevent duplicates
+    mapping(uint256 => GrassEvent) public events;       // event ids to grassEvent
+    mapping(address => mapping(address => FriendshipAttestation)) public friendships;       // user address to frient to friend attestation
+    mapping(uint256 => mapping(address => LocationProof)) public locationProofs;        // event id->user address-> loc proof
+    mapping(uint256 => address[]) public eventAttendees;        // event id->attendees
+    mapping(address => uint256[]) public userEvents;        // user addres to list of event IDS they created
+    mapping(address => UserProfile) public userProfiles;        // user addres to their profile
+    mapping(bytes32 => address) public deviceToUser;        // device fingerprint to user address
+    mapping(uint256 => mapping(address => bool)) public hasAttended; // To prevent duplicates
     
     // Configuration
     uint256 public constant MAX_FRIENDS_PER_EVENT = 6;
     uint256 public constant MIN_FRIENDS_PER_EVENT = 1;
-    uint256 public constant LOCATION_VERIFICATION_WINDOW = 2 hours;
-    address public trustedGPSOracle;
+    uint256 public constant LOCATION_VERIFICATION_WINDOW = 2 hours;     // not used as of now
+    address public trustedGPSOracle;        // Oracle address trusted for GPS verification
     
     TouchGrassNFT public nftContract;
 
-    // Rate limiting
+    // Rate limiting to prevent spamming actions
     mapping(address => uint256) public lastActionTime;
     uint256 public constant ACTION_COOLDOWN = 1 minutes;
 
+    // Modifiers
     modifier validAddress(address _addr) {
         require(_addr != address(0), "Invalid address");
         require(_addr != msg.sender, "Cannot reference self");
@@ -97,9 +97,10 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
         _;
     }
 
+    // constructor
     constructor() {
         trustedGPSOracle = msg.sender;
-        // nftContract will be set after NFT deployment
+        // nftContract will be set after NFT deployment since it was leading to circular dependency
     }
 
     /**
@@ -111,8 +112,11 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Attest to a friendship (requires mutual attestation)
-     * THIS FUNCTION MUST BE DEFINED BEFORE batchAttestFriends
+     * @dev Attest friendship with another user.
+     * - Ensures you can't attest yourself.
+     * - Records your attestation.
+     * - If the other user already attested you, marks it as mutual.
+     * - Emits event to notify listeners.
      */
     function attestFriend(address _friend) public nonReentrant rateLimited {
         require(_friend != msg.sender, "Cannot attest to yourself");
@@ -138,8 +142,7 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Batch attest multiple friends
-     * NOW THIS CAN CALL attestFriend BECAUSE IT'S DEFINED ABOVE
+     * @dev Can attest multiple friends in a batch
      */
     function batchAttestFriends(address[] calldata _friends) external {
         for (uint i = 0; i < _friends.length; i++) {
@@ -165,7 +168,7 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
         require(_invitedFriends.length <= MAX_FRIENDS_PER_EVENT, "Too many friends");
         require(_radiusMeters > 0 && _radiusMeters <= 1000, "Invalid radius");
 
-        // Verify all invited friends are mutually attested
+        // Verify all invited friends are mutually attested with creatorr
         for (uint i = 0; i < _invitedFriends.length; i++) {
             require(
                 friendships[msg.sender][_invitedFriends[i]].isMutual,
@@ -209,7 +212,7 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
         GrassEvent memory grassEvent = events[_eventId];
         require(grassEvent.isActive, "Event not active");
         require(!hasAttended[_eventId][msg.sender], "Already verified location");
-        
+        // if user is event creator or invited friend- they r authorised
         bool isAuthorized = (msg.sender == grassEvent.creator);
         if (!isAuthorized) {
             for (uint i = 0; i < grassEvent.invitedFriends.length; i++) {
@@ -220,6 +223,8 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
             }
         }
         require(isAuthorized, "Not authorized");
+
+        // confirm loc is inside the geofence radius
         require(_isWithinGeofence(_lat, _lng, grassEvent), "Outside geofence");
         
         // Store location proof
@@ -242,6 +247,8 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
 
     /**
      * @dev Finalize collaborative memory and enable minting
+     * in frontend the collaboaration etc will happen
+     * only created can finalise it 
      */
     function finalizeMemory(uint256 _eventId, string memory _ipfsHash) external {
         GrassEvent storage grassEvent = events[_eventId];
@@ -270,7 +277,7 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
             eventAttendees[_eventId]
         );
 
-        // Update friendship interaction counts
+        // Update friendship interaction counts among attendees
         address[] memory attendees = eventAttendees[_eventId];
         for (uint i = 0; i < attendees.length; i++) {
             if (attendees[i] != msg.sender && friendships[msg.sender][attendees[i]].isMutual) {
@@ -284,7 +291,7 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Get user's friendship level with another user
+     * @dev Get user's friendship level(1-5) with another user
      */
     function getFriendshipLevel(address _user, address _friend) external view returns (uint256) {
         if (!friendships[_user][_friend].isMutual) return 0;
@@ -333,7 +340,7 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
         int256 lngDiff = _lng - _event.centerLng;
         
         // Convert to approximate meters using rough conversion
-        // 1 degree ≈ 111,000 meters (this is simplified - real calculation needs haversine)
+        // 1 degree ≈ 111,000 meters (this is simplified - real calculation needs haversine -- will do in backend)
         int256 latMeters = (latDiff * 111000) / 1e6;
         int256 lngMeters = (lngDiff * 111000) / 1e6;
         
@@ -365,14 +372,23 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
         trustedGPSOracle = _oracle;
     }
 
+    /**
+     * @dev Emergency pause event (only owner)
+     */
     function pauseEvent(uint256 _eventId) external onlyOwner {
         events[_eventId].isActive = false;
     }
-
+// Lets the contract owner manually set whether an event is isActive (true/false).
+// so to Quickly start or stop an event without going through normal event lifecycle code.
+// Useful for testing behavior when an event is "active" or "inactive".
     function debugSetEventActive(uint256 _eventId, bool _active) external onlyOwner {
         events[_eventId].isActive = _active;
     }
 
+// Force-adds an attendee to an event’s attendee list.
+// Creates a dummy LocationProof entry for that attendee (lat/lng are set to 0 just as placeholders).
+// TO Bypass normal location verification for manual attendance insertion.
+// Testing “attendee” dependent features without needing GPS verification.
     function debugAddAttendee(uint256 _eventId, address _attendee) external onlyOwner {
         if (!hasAttended[_eventId][_attendee]) {
             eventAttendees[_eventId].push(_attendee);
@@ -386,323 +402,6 @@ contract TouchGrassCore is Ownable, ReentrancyGuard {
             });
             hasAttended[_eventId][_attendee] = true;
         }
-    }
-}
-
-/**
- * @title TouchGrassNFT
- * @dev Dynamic NFT contract for TouchGrass memories
- * Features evolving metadata based on friendship levels and interactions
- */
-contract TouchGrassNFT is ERC721, ERC721URIStorage, Ownable {
-    using Counters for Counters.Counter;
-
-    // Events
-    event MemoryNFTMinted(uint256 indexed tokenId, address indexed owner, uint256 indexed eventId);
-    event MetadataUpdated(uint256 indexed tokenId, string newMetadataURI);
-
-    // Structs
-    struct MemoryNFT {
-        uint256 eventId;
-        address[] crewMembers;
-        uint256 mintedAt;
-        string baseIPFSHash;
-        uint256 friendshipLevel;
-        bool isPublic;
-    }
-
-    Counters.Counter private _tokenIds;
-    TouchGrassCore public coreContract;
-    
-    mapping(uint256 => MemoryNFT) public memoryNFTs;
-    mapping(uint256 => mapping(address => uint256)) public eventToUserToken; // eventId => user => tokenId
-    
-    string public baseMetadataURI;
-
-    constructor() ERC721("TouchGrass Memory", "TGMEM") {
-        baseMetadataURI = "https://api.touchgrass.app/metadata/";
-    }
-
-    /**
-     * @dev Set the core contract address (only owner)
-     */
-    function setCoreContract(address _coreContract) external onlyOwner {
-        coreContract = TouchGrassCore(_coreContract);
-    }
-
-    /**
-     * @dev Mint a memory NFT (only called by core contract)
-     */
-    function mintMemoryNFT(
-        address _to,
-        uint256 _eventId,
-        string memory _ipfsHash,
-        address[] memory _crewMembers
-    ) external returns (uint256) {
-        require(msg.sender == address(coreContract), "Only core contract can mint");
-        require(eventToUserToken[_eventId][_to] == 0, "User already has NFT for this event");
-
-        _tokenIds.increment();
-        uint256 tokenId = _tokenIds.current();
-
-        _safeMint(_to, tokenId);
-
-        // Calculate initial friendship level based on crew interactions
-        uint256 friendshipLevel = _calculateFriendshipLevel(_to, _crewMembers);
-
-        memoryNFTs[tokenId] = MemoryNFT({
-            eventId: _eventId,
-            crewMembers: _crewMembers,
-            mintedAt: block.timestamp,
-            baseIPFSHash: _ipfsHash,
-            friendshipLevel: friendshipLevel,
-            isPublic: false
-        });
-
-        eventToUserToken[_eventId][_to] = tokenId;
-
-        // Set initial metadata URI
-        string memory metadataURI = string(abi.encodePacked(baseMetadataURI, _toString(tokenId)));
-        _setTokenURI(tokenId, metadataURI);
-
-        emit MemoryNFTMinted(tokenId, _to, _eventId);
-        return tokenId;
-    }
-
-    /**
-     * @dev Update NFT metadata when friendship level changes
-     */
-    function updateFriendshipLevel(uint256 _tokenId) external {
-        require(_exists(_tokenId), "Token does not exist");
-        
-        MemoryNFT storage memoryNFT = memoryNFTs[_tokenId];
-        address owner = ownerOf(_tokenId);
-        
-        // Recalculate friendship level
-        uint256 newFriendshipLevel = _calculateFriendshipLevel(owner, memoryNFT.crewMembers);
-        
-        if (newFriendshipLevel != memoryNFT.friendshipLevel) {
-            memoryNFT.friendshipLevel = newFriendshipLevel;
-            
-            // Update metadata URI to reflect new level
-            string memory metadataURI = string(abi.encodePacked(
-                baseMetadataURI, 
-                _toString(_tokenId),
-                "?level=",
-                _toString(newFriendshipLevel)
-            ));
-            _setTokenURI(_tokenId, metadataURI);
-            
-            emit MetadataUpdated(_tokenId, metadataURI);
-        }
-    }
-
-    /**
-     * @dev Make memory public (shareable to cultural feed)
-     */
-    function makeMemoryPublic(uint256 _tokenId) external {
-        require(ownerOf(_tokenId) == msg.sender, "Only owner can make public");
-        memoryNFTs[_tokenId].isPublic = true;
-    }
-
-    /**
-     * @dev Get memory details
-     */
-    function getMemoryDetails(uint256 _tokenId) external view returns (
-        uint256 eventId,
-        address[] memory crewMembers,
-        uint256 mintedAt,
-        string memory baseIPFSHash,
-        uint256 friendshipLevel,
-        bool isPublic
-    ) {
-        require(_exists(_tokenId), "Token does not exist");
-        MemoryNFT memory memory_nft = memoryNFTs[_tokenId];
-        
-        return (
-            memory_nft.eventId,
-            memory_nft.crewMembers,
-            memory_nft.mintedAt,
-            memory_nft.baseIPFSHash,
-            memory_nft.friendshipLevel,
-            memory_nft.isPublic
-        );
-    }
-
-    /**
-     * @dev Get all public memories for cultural feed
-     */
-    function getPublicMemories(uint256 _offset, uint256 _limit) external view returns (uint256[] memory) {
-        require(_limit <= 50, "Limit too high");
-        
-        uint256[] memory publicTokens = new uint256[](_limit);
-        uint256 count = 0;
-        uint256 currentIndex = 0;
-        
-        for (uint256 i = 1; i <= _tokenIds.current() && count < _limit; i++) {
-            if (memoryNFTs[i].isPublic) {
-                if (currentIndex >= _offset) {
-                    publicTokens[count] = i;
-                    count++;
-                }
-                currentIndex++;
-            }
-        }
-        
-        // Resize array to actual count
-        uint256[] memory result = new uint256[](count);
-        for (uint256 i = 0; i < count; i++) {
-            result[i] = publicTokens[i];
-        }
-        
-        return result;
-    }
-
-    /**
-     * @dev Calculate friendship level based on crew interactions
-     */
-    function _calculateFriendshipLevel(address _user, address[] memory _crewMembers) internal view returns (uint256) {
-        uint256 totalLevel = 0;
-        uint256 friendCount = 0;
-        
-        for (uint i = 0; i < _crewMembers.length; i++) {
-            if (_crewMembers[i] != _user) {
-                uint256 level = coreContract.getFriendshipLevel(_user, _crewMembers[i]);
-                if (level > 0) {
-                    totalLevel += level;
-                    friendCount++;
-                }
-            }
-        }
-        
-        return friendCount > 0 ? totalLevel / friendCount : 1;
-    }
-
-    /**
-     * @dev Set base metadata URI (only owner)
-     */
-    function setBaseMetadataURI(string memory _baseURI) external onlyOwner {
-        baseMetadataURI = _baseURI;
-    }
-
-    /**
-     * @dev Convert uint to string
-     */
-    function _toString(uint256 value) internal pure returns (string memory) {
-        if (value == 0) {
-            return "0";
-        }
-        uint256 temp = value;
-        uint256 digits;
-        while (temp != 0) {
-            digits++;
-            temp /= 10;
-        }
-        bytes memory buffer = new bytes(digits);
-        while (value != 0) {
-            digits -= 1;
-            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
-            value /= 10;
-        }
-        return string(buffer);
-    }
-
-    // Override required by Solidity
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
-    }
-
-    function tokenURI(uint256 tokenId) public view override(ERC721, ERC721URIStorage) returns (string memory) {
-        return super.tokenURI(tokenId);
-    }
-
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC721URIStorage) returns (bool) {
-        return super.supportsInterface(interfaceId);
-    }
-}
-
-/**
- * @title TouchGrassPaymaster  
- * @dev Paymaster contract for gasless onboarding
- * Sponsors gas for first-time users and specific operations
- */
-contract TouchGrassPaymaster is Ownable {
-    
-    // Events
-    event UserSponsored(address indexed user, uint256 gasUsed, uint256 gasPrice);
-    event SponsorshipBudgetUpdated(uint256 newBudget);
-    
-    // State
-    mapping(address => bool) public hasReceivedSponsorship;
-    mapping(address => uint256) public userSponsoredGas;
-    
-    uint256 public sponsorshipBudget;
-    uint256 public maxSponsorshipPerUser = 0.001 ether; // Max gas sponsorship per user
-    uint256 public totalSponsored;
-    
-    TouchGrassCore public coreContract;
-    TouchGrassNFT public nftContract;
-    
-    constructor(address _coreContract, address _nftContract) {
-        coreContract = TouchGrassCore(_coreContract);
-        nftContract = TouchGrassNFT(_nftContract);
-        sponsorshipBudget = 1 ether; // Initial budget
-    }
-    
-    /**
-     * @dev Check if user is eligible for gas sponsorship
-     */
-    function isEligibleForSponsorship(address _user) public view returns (bool) {
-        return !hasReceivedSponsorship[_user] && 
-               userSponsoredGas[_user] < maxSponsorshipPerUser &&
-               address(this).balance >= maxSponsorshipPerUser;
-    }
-    
-    /**
-     * @dev Sponsor gas for eligible users
-     */
-    function sponsorGas(address _user, uint256 _gasUsed, uint256 _gasPrice) external {
-        require(msg.sender == address(coreContract) || msg.sender == address(nftContract), "Unauthorized");
-        require(isEligibleForSponsorship(_user), "User not eligible");
-        
-        uint256 gasRefund = _gasUsed * _gasPrice;
-        require(gasRefund <= maxSponsorshipPerUser, "Refund exceeds limit");
-        require(address(this).balance >= gasRefund, "Insufficient balance");
-        
-        hasReceivedSponsorship[_user] = true;
-        userSponsoredGas[_user] += gasRefund;
-        totalSponsored += gasRefund;
-        
-        payable(_user).transfer(gasRefund);
-        
-        emit UserSponsored(_user, _gasUsed, _gasPrice);
-    }
-    
-    /**
-     * @dev Add funds to sponsorship budget
-     */
-    function addFunds() external payable onlyOwner {
-        sponsorshipBudget += msg.value;
-        emit SponsorshipBudgetUpdated(sponsorshipBudget);
-    }
-    
-    /**
-     * @dev Withdraw excess funds
-     */
-    function withdrawFunds(uint256 _amount) external onlyOwner {
-        require(address(this).balance >= _amount, "Insufficient balance");
-        payable(owner()).transfer(_amount);
-    }
-    
-    /**
-     * @dev Update sponsorship parameters
-     */
-    function updateSponsorshipParams(uint256 _maxPerUser) external onlyOwner {
-        maxSponsorshipPerUser = _maxPerUser;
-    }
-    
-    receive() external payable {
-        sponsorshipBudget += msg.value;
     }
 }
 
