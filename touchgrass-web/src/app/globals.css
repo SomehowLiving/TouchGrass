@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@layer {
+  body,
+  html {
+    height: 100%;
+    overflow-x: hidden;
+  }
+}
