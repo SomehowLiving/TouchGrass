@@ -1,14 +1,15 @@
 // app/plan/page.tsx
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { ArrowLeft, Share, UserPlus, MessageCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import toast from "react-hot-toast";
 
 // Component that uses useSearchParams - needs to be wrapped in Suspense
 function PlanContent() {
-  const { walletAddress } = useAuth();
+  const { walletAddress, email, isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
   const cliqueIdFromUrl = searchParams.get("cliqueId");
 
@@ -27,6 +28,15 @@ function PlanContent() {
     isPublic: true,
     isClique: false,
   });
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated && !toastShownRef.current) {
+      toast.error("Sign in first to create a plan");
+      toastShownRef.current = true;
+      router.push("/");
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const fetchCliques = async () => {

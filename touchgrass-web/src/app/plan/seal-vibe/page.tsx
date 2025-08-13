@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Share, UserPlus, Upload } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import MemoryMintedModal from "@/components/MemoryMintedModal";
-import { Suspense } from "react";
+import toast from "react-hot-toast";
 
 interface PlanData {
   planTitle: string;
@@ -19,7 +19,7 @@ function SealVibePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const cliqueId = searchParams.get("cliqueId");
-  const { walletAddress } = useAuth();
+  const { walletAddress, email, isAuthenticated } = useAuth();
   console.log("clique Id ", cliqueId);
 
   const [planData, setPlanData] = useState<PlanData | null>(null);
@@ -30,6 +30,16 @@ function SealVibePageContent() {
   const [uploading, setUploading] = useState(false);
   const [uploadUrl, setUploadUrl] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
+
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated && !toastShownRef.current) {
+      toast.error("Please sign in to proceed");
+      toastShownRef.current = true;
+      router.push("/");
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!cliqueId || !walletAddress) return;
