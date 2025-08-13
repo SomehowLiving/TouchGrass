@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Share, UserPlus } from "lucide-react";
 import AddMembersModal from "@/components/AddMembersModal";
 import { useAuth } from "@/context/AuthContext";
+import toast from "react-hot-toast";
 
 interface Clique {
   id: string;
@@ -14,12 +15,22 @@ interface Clique {
 }
 
 const CliquePage = () => {
-  const { walletAddress } = useAuth();
+  const { walletAddress, email, isAuthenticated } = useAuth();
   const [addMembers, setAddMembers] = useState(false);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [cliques, setCliques] = useState<Clique[]>([]);
   const [selectedClique, setSelectedClique] = useState<Clique | null>(null);
+
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated && !toastShownRef.current) {
+      toast.error("Please sign in first to view your cliques");
+      toastShownRef.current = true;
+      router.push("/");
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const fetchCliques = async () => {
@@ -38,6 +49,7 @@ const CliquePage = () => {
 
         setCliques(mapped);
       } catch (err) {
+        toast.error("Error occurred, please try again");
         console.error("Error fetching cliques", err);
       } finally {
         setLoading(false);
@@ -85,6 +97,7 @@ const CliquePage = () => {
           }));
           setCliques(mapped);
         } catch (err) {
+          toast.error("Error occurred, please try again");
           console.error("Error fetching cliques", err);
         }
       };

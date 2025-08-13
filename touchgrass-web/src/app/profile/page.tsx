@@ -4,10 +4,21 @@ import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { Pencil, Plus, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { useRef, useEffect } from "react";
 
 const ProfilePage = () => {
   const { walletAddress, email, isAuthenticated } = useAuth();
   const router = useRouter();
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated && !toastShownRef.current) {
+      toast.error("Please sign in to access your profile");
+      toastShownRef.current = true;
+      router.push("/");
+    }
+  }, [isAuthenticated]);
 
   const cliques = [
     "/avatar1.png",

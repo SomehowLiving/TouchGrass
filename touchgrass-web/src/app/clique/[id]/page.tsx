@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Share, UserPlus } from "lucide-react";
 import { useParams } from "next/navigation";
 import HeaderActions from "@/components/HeaderActions";
+import toast from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 interface Clique {
   id: string;
@@ -15,9 +17,19 @@ interface Clique {
 }
 
 const CliqueDetailPage = () => {
+  const { isAuthenticated } = useAuth();
   const { id } = useParams();
   const router = useRouter();
   const [clique, setClique] = useState<Clique | null>(null);
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated && !toastShownRef.current) {
+      toast.error("Please sign in first to view your cliques");
+      toastShownRef.current = true;
+      router.push("/");
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     const fetchClique = async () => {

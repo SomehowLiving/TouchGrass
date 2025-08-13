@@ -1,13 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Share, UserPlus } from "lucide-react";
 import Image from "next/image";
 import Logo from "../../../public/logo.png";
+import toast from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const ChatPage = () => {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const toastShownRef = useRef(false);
+
+  useEffect(() => {
+    if (!isAuthenticated && !toastShownRef.current) {
+      toast.error("Please sign in first to view your cliques");
+      toastShownRef.current = true;
+      router.push("/");
+    }
+  }, [isAuthenticated]);
 
   const handleShare = () => {
     // Generate referral link logic
