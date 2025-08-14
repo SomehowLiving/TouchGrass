@@ -1,11 +1,11 @@
 {
-  "network": "hardhat",
-  "chainId": "31337",
-  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "network": "tenderly",
+  "chainId": "84532",
+  "deployer": "0x496bA83da236cFF6a0efFf3Edea427bcAd96eeFE",
   "contracts": {
-    "TouchGrassCore": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    "TouchGrassNFT": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    "TouchGrassPaymaster": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+    "TouchGrassCore": "0x93c6DdC4953162E3BFbCBf513AC030006D086530",
+    "TouchGrassNFT": "0xEa68f22aD574dB746c23596Fd72C857675D6A25A",
+    "TouchGrassPaymaster": "0x8F5eCe095EEC47fB8dAd65BD6EA9044FbFD1Bb9a"
   },
-  "deploymentTime": "2025-08-09T16:29:11.781Z"
+  "deploymentTime": "2025-08-14T20:34:06.885Z"
 }
