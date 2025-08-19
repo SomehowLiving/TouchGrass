@@ -6,25 +6,22 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 contract CliqueNFT is ERC721URIStorage {
     uint256 public tokenCounter;
 
-    // logging events
-    event CliqueMinted(uint256 tokenId, address minter, string uri);
+    event CliqueMinted(uint256 indexed tokenId, address indexed minter, string tokenURI);
 
-    // set the collection name + short symbol
     constructor() ERC721("CliqueNFT", "CLQ") {
-        tokenCounter = 0; // start counting from 0
+        tokenCounter = 0;
     }
-
+    
     // anyone can mint their own NFT
     // they just pass the ipfs link to their metadata json- no owner check
-    function mintClique(string memory uri) external returns (uint256) {
-        uint256 newId = tokenCounter;
+    function mintClique(string memory tokenURI) external returns (uint256) {
+        uint256 newTokenId = tokenCounter;
+        _safeMint(msg.sender, newTokenId);
+        _setTokenURI(newTokenId, tokenURI);
 
-        _safeMint(msg.sender, newId);   // mint it to the caller
-        _setTokenURI(newId, uri);       // connect it with ipfs metadata
+        emit CliqueMinted(newTokenId, msg.sender, tokenURI);
 
-        emit CliqueMinted(newId, msg.sender, uri);
-
-        tokenCounter += 1; // get ready for the next NFT
-        return newId;
+        tokenCounter += 1;  // get ready for the next NFT
+        return newTokenId;
     }
 }
