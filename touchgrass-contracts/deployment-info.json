@@ -3,9 +3,7 @@
   "chainId": "84532",
   "deployer": "0x496bA83da236cFF6a0efFf3Edea427bcAd96eeFE",
   "contracts": {
-    "TouchGrassCore": "0x93c6DdC4953162E3BFbCBf513AC030006D086530",
-    "TouchGrassNFT": "0xEa68f22aD574dB746c23596Fd72C857675D6A25A",
-    "TouchGrassPaymaster": "0x8F5eCe095EEC47fB8dAd65BD6EA9044FbFD1Bb9a"
+    "CliqueNFT": "0xa106Ac80F3b03e8A8bfC54Fd861362567593d997"
   },
-  "deploymentTime": "2025-08-14T20:34:06.885Z"
+  "deploymentTime": "2025-08-20T11:13:21.349Z"
 }
