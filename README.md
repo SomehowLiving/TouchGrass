@@ -19,12 +19,36 @@ TouchGrass transforms authentic in-person moments into permanent, blockchain-ver
 - **Collaborative Memory Creation**: Shared photos, doodles, and artifacts
 - **Dynamic NFTs**: Memories that evolve as friendships grow stronger
 - **Cultural Feed**: Public gallery of shared memories
+  
+## User Flow
 
-### **MVP User Flow**
-```
-Download App → Invisible Wallet → Add Friends → Create Event → 
-Meet IRL → Verify Location → Collaborate → Mint NFT → Share Memory
-```
+This diagram illustrates the core user flow of `touchgrass`:
+
+ ```mermaid
+ sequenceDiagram
+     actor U as User
+     participant A as touchgrass App
+     Participant S as Base
+     participant IPFS
+
+     U->>A: visits dApp
+     U->>A: Connects Wallet (Sequence)
+
+     U->>A: Creates Plan
+     A->>S: Records plan & invitees
+     S-->>A: Plan ID created
+
+     U->>A: Accepts Plan (/Meet IRL)
+     A->>S: Calls accept()
+     S-->>A: Verify Location
+     U->>A: Uploads Memory (/memory)
+     A->>IPFS: Stores image/video
+     IPFS-->>A: Returns IPFS hash
+
+     U->>A: Mints NFT (/mint)
+     A->>S: Calls mint() with IPFS hash
+     S-->>A: NFT minted & returned
+ ```
 
 ---
 
