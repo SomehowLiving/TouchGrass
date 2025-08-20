@@ -6,10 +6,9 @@
 BASE_URL="http://localhost:3000/api/v1"
 
 # Your test addresses
-USER1=""
-USER2=""
-USER3=""
-
+USER1=
+USER2=
+USER3=
 echo "🚀 TouchGrass API Testing Suite"
 echo "================================="
 
