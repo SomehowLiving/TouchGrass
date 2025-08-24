@@ -1,9 +1,9 @@
 {
   "network": "tenderly",
   "chainId": "84532",
-  "deployer": "0x496bA83da236cFF6a0efFf3Edea427bcAd96eeFE",
+  "deployer": "0x1d94092274b97Ed65753acEa500CbdB8f74EdCaE",
   "contracts": {
-    "CliqueNFT": "0xa106Ac80F3b03e8A8bfC54Fd861362567593d997"
+    "CliqueNFT": "0x35AcB41e1c3a0B35478ce9d01FC1aa45E15416E2"
   },
-  "deploymentTime": "2025-08-20T11:13:21.349Z"
+  "deploymentTime": "2025-08-24T16:49:45.104Z"
 }

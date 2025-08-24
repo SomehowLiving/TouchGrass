@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { sequence } from "0xsequence";
 import { ethers } from "ethers";
-import CliqueNFT from "../../../../../backend/src/abis/CliqueNFT.json";
+import CliqueNFT from "../../../../backend/src/abis/CliqueNFT.json";
 
 interface PlanData {
   planTitle: string;
@@ -19,7 +19,7 @@ interface PlanData {
   isClique: boolean;
 }
 
-function SealVibePageContent() {
+function TestOneContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const cliqueId = searchParams.get("cliqueId");
@@ -501,7 +501,7 @@ const Input = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
-const SealVibePage = () => {
+const TestOnePage = () => {
   return (
     <Suspense
       fallback={
@@ -510,9 +510,9 @@ const SealVibePage = () => {
         </div>
       }
     >
-      <SealVibePageContent />
+      <TestOneContent />
     </Suspense>
   );
 };
 
-export default SealVibePage;
+export default TestOnePage;

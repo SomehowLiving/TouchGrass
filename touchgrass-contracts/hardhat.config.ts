@@ -15,7 +15,7 @@ const config: HardhatUserConfig = {
       url: "http://127.0.0.1:8545",
     },
     tenderly: {
-      url: "https://virtual.base-sepolia.eu.rpc.tenderly.co/7489fbd8-dbe0-42ff-9947-79b9a004ab2d",
+      url: "https://virtual.base-sepolia.eu.rpc.tenderly.co/c917d76d-8930-49fc-8854-74082a5d4f28",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
   },

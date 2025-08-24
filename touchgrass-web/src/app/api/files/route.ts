@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const { cid } = await pinata.upload.public.file(file as File);
     console.log("CID returned:", cid);
 
-    const url = pinata.gateways.public.convert(cid);
+    const url = await pinata.gateways.public.convert(cid);
     return NextResponse.json({ url }, { status: 200 });
   } catch (e) {
     console.error("Pinata upload failed", e);
