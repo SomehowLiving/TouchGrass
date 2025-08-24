@@ -12,13 +12,16 @@
 
 TouchGrass transforms authentic in-person moments into permanent, blockchain-verified memories. Our MVP focuses on the core user journey: **gasless onboarding → friend connections → IRL meetups → collaborative NFT memories**.
 
-### **MVP Core Features** ✅
-- **Gasless Onboarding**: Invisible wallet creation & sponsored transactions
-- **Friend Attestation**: Mutual verification system for authentic connections
-- **Geofenced Events**: GPS-verified meetup locations with anti-spoofing
-- **Collaborative Memory Creation**: Shared photos, doodles, and artifacts
-- **Dynamic NFTs**: Memories that evolve as friendships grow stronger
-- **Cultural Feed**: Public gallery of shared memories
+### **MVP Core Features** 
+- Gasless Onboarding: Invisible wallet creation & sponsored transactions
+
+- Friend Attestation: Mutual verification system for authentic connections
+
+- Collaborative Memory Creation: Shared photos, doodles, and artifacts
+
+- Dynamic NFTs: Memories that evolve as friendships grow stronger
+
+- Cultural Feed: Public gallery of shared memories
   
 ## User Flow
 
@@ -40,7 +43,7 @@ This diagram illustrates the core user flow of `touchgrass`:
 
      U->>A: Accepts Plan (/Meet IRL)
      A->>S: Calls accept()
-     S-->>A: Verify Location
+     S-->>A: Meet up IRL
      U->>A: Uploads Memory (/memory)
      A->>IPFS: Stores image/video
      IPFS-->>A: Returns IPFS hash
@@ -60,7 +63,7 @@ This diagram illustrates the core user flow of `touchgrass`:
 
 ### **1. Gasless Onboarding (30 seconds)**
 ```
-User Downloads App → Background Wallet Creation → Device Registration → Push Notification Permission
+User goes to the dapp website → Background Wallet Creation → Device Registration → Push Notification Permission
 ```
 - **No crypto knowledge required**
 - **No manual wallet setup**
@@ -69,9 +72,9 @@ User Downloads App → Background Wallet Creation → Device Registration → Pu
 
 ### **2. Friend Discovery & Connection**
 ```
-Scan QR Code → Mutual Attestation → Trust Level Assignment → Social Graph Update
+Accepts Invitation → Mutual Attestation → Trust Level Assignment → Social Graph Update
 ```
-- **In-person QR scanning for authenticity**
+- **Accepts invites to join clique**
 - **Mutual verification prevents fake connections**
 - **Trust levels unlock features progressively**
 
@@ -80,18 +83,11 @@ Scan QR Code → Mutual Attestation → Trust Level Assignment → Social Graph 
 Create Event → Set Location & Time → Invite Friends → Send Push Notifications
 ```
 - **Simple event creation interface**
-- **Automatic geofence setup**
+- **Input location of the event manually**
 - **Real-time invitation system**
 
-### **4. IRL Meetup & Verification**
-```
-Arrive at Location → GPS Verification → Real-time Collaboration → Memory Capture
-```
-- **Automatic location detection**
-- **Collaborative canvas for photos/doodles**
-- **Real-time sync between attendees**
 
-### **5. NFT Minting & Sharing**
+### **4. NFT Minting & Sharing**
 ```
 All Friends Verified → Finalize Memory → Mint Collaborative NFT → Share to Feed
 ```
