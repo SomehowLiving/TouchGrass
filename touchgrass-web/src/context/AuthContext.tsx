@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refetch: refetchAccounts,
   } = useListAccounts();
 
+  console.log("user information all ", accountData);
   const email = accountData?.accounts[0]?.email;
 
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
