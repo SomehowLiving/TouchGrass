@@ -511,20 +511,17 @@ Cost per active user: ~$0.145
 ## 🔗 MVP Links & Resources
 
 ### **Live Links**
-- **MVP App**: [app.touchgrass.xyz](https://app.touchgrass.xyz) (coming Q4 2025)
-- **Documentation**: [docs.touchgrass.xyz](https://docs.touchgrass.xyz)
-- **Status Page**: [status.touchgrass.xyz](https://status.touchgrass.xyz)
+- **MVP dApp**: [touch-grass-xo.vercel.app](https://touch-grass-xo.vercel.app) (coming Q4 2025)
+
 
 ### **Development Resources**
-- **GitHub**: [github.com/touchgrass/mvp](https://github.com/touchgrass/mvp)
-- **Discord**: [discord.gg/touchgrass](https://discord.gg/touchgrass)
+- **GitHub**: [github.com/touchgrass/mvp](https://github.com/SomehowLiving/TouchGrass)
 - **Base Testnet Faucet**: [faucet.quicknode.com/base/sepolia](https://faucet.quicknode.com/base/sepolia)
 - **Contract Addresses**: [Coming after deployment]
 
 ### **Community**
 - **Twitter**: [@touchgrass_app](https://x.com/just_touchgrass)
-- **Mirror Blog**: [touchgrass.mirror.xyz](https://touchgrass.mirror.xyz)
-- **Feedback Form**: [feedback.touchgrass.xyz](https://feedback.touchgrass.xyz)
+- **Feedback Form**: [feedback.touchgrass.xyz](https://tinyurl.com/touchgrass-feedback)
 
 ---
 
