@@ -10,6 +10,15 @@ import { motion } from "framer-motion";
 import { sequence } from "0xsequence";
 import { ethers } from "ethers";
 import CliqueNFT from "../../../../../backend/src/abis/CliqueNFT.json";
+import {
+  useAccount,
+  useConnect,
+  useDisconnect,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+} from "wagmi";
+
+import Header from "@/components/Header";
 
 interface PlanData {
   planTitle: string;
@@ -36,10 +45,48 @@ function SealVibePageContent() {
   const [showModal, setShowModal] = useState(false);
   const [stateMessage, setStateMessage] = useState("");
   const [metadataUrl, setMetadataUrl] = useState("");
-  const [address, setAddress] = useState<string | null>(null);
+
   const [isMinting, setIsMinting] = useState(false);
 
   const toastShownRef = useRef(false);
+  const { address, isConnected } = useAccount();
+  const { connect, connectors, error: connectError } = useConnect();
+  const { disconnect } = useDisconnect();
+
+  const {
+    writeContract,
+    data: txHash, // transaction hash when user submits tx
+    isPending,
+    error: writeError,
+  } = useWriteContract();
+
+  const {
+    isLoading: isConfirming,
+    isSuccess,
+    data: receipt, // transaction receipt after confirmation
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  const mintNFT = async (metadataUrl: string) => {
+    if (!isConnected) return;
+    if (!metadataUrl) {
+      toast.error("Please upload a memory first!");
+      return;
+    }
+
+    if (!metadataUrl.startsWith("ipfs://")) {
+      console.error("Invalid metadata URL format:", metadataUrl);
+      toast.error("Invalid metadata URL format - must be ipfs:// URL");
+      return;
+    }
+    writeContract({
+      address: "0x35AcB41e1c3a0B35478ce9d01FC1aa45E15416E2", // contract address
+      abi: CliqueNFT,
+      functionName: "mintClique",
+      args: [metadataUrl],
+    });
+  };
 
   useEffect(() => {
     if (!isAuthenticated && !toastShownRef.current) {
@@ -187,121 +234,6 @@ function SealVibePageContent() {
 
     setIsMinting(true);
     setIsLoading(true);
-
-    try {
-      console.log("=== MINT DEBUG INFO ===");
-      console.log("Metadata URL:", metadataUrl);
-      console.log("Wallet address from context:", walletAddress);
-      console.log("Is authenticated:", isAuthenticated);
-      console.log("Wallet isConnected:", sequence.getWallet().isConnected());
-      console.log("Wallet provider:", await sequence.getWallet().getProvider());
-      console.log("Contract address:", process.env.NEXT_PUBLIC_CLIQUE_CONTRACT);
-      console.log("Sequence wallet initialized:", !!sequence.getWallet());
-      console.log("=======================");
-
-      const wallet = await sequence.getWallet();
-
-      if (!walletAddress) {
-        throw new Error("No wallet address available in AuthContext");
-      }
-
-      let currentAddress: string;
-
-      if (!wallet.isConnected()) {
-        setStateMessage("Connecting wallet...");
-        console.log("Attempting wallet connection...");
-        const connectDetails = await wallet.connect({
-          app: "TouchGrass",
-          authorize: true,
-          settings: { theme: "light" },
-        });
-
-        if (!connectDetails.connected) {
-          console.error("Wallet connection failed:", connectDetails.error);
-          throw new Error(connectDetails.error || "Failed to connect wallet");
-        }
-
-        const sessionAddress = connectDetails.session?.accountAddress;
-        if (!sessionAddress) {
-          throw new Error("No account address returned from wallet connection");
-        }
-
-        currentAddress = sessionAddress;
-        setAddress(currentAddress);
-        console.log("Wallet connected, address:", currentAddress);
-        toast.success(
-          `Wallet connected: ${currentAddress.slice(
-            0,
-            6
-          )}...${currentAddress.slice(-4)}`
-        );
-      } else {
-        console.log("Wallet already connected");
-        currentAddress = await wallet.getAddress();
-        setAddress(currentAddress);
-      }
-
-      setStateMessage("Minting your memory NFT...");
-      console.log("Calling mintClique with URI:", metadataUrl);
-
-      const contractAddress = process.env.NEXT_PUBLIC_CLIQUE_CONTRACT;
-      if (!contractAddress) {
-        throw new Error("Contract address not configured");
-      }
-
-      const signer = wallet.getSigner(84532); // Base Sepolia
-      const contract = new ethers.Contract(contractAddress, CliqueNFT, signer);
-
-      console.log("Sending mintClique transaction...");
-      const tx = await contract.mintClique(metadataUrl);
-      console.log("Transaction sent, hash:", tx.hash);
-      const receipt = await tx.wait();
-      console.log("Transaction receipt:", receipt);
-      const cliqueMintedEvent = receipt.events?.find(
-        (e: any) => e.event === "CliqueMinted"
-      );
-      const tokenId =
-        cliqueMintedEvent?.args?.tokenId ||
-        receipt.events?.find((e: any) => e.event === "Transfer")?.args?.tokenId;
-
-      if (!tokenId) {
-        throw new Error("Failed to retrieve token ID from transaction");
-      }
-
-      console.log("Mint successful:", { tokenId });
-      setStateMessage("");
-      toast.success(`🎉 NFT Minted Successfully! Token ID: ${tokenId}`);
-      setShowModal(true);
-    } catch (err: any) {
-      console.error("=== MINT ERROR ===");
-      console.error("Error object:", JSON.stringify(err, null, 2));
-      console.error("Error message:", err.message || "No message provided");
-      console.error("Error code:", err.code || "No code provided");
-      console.error("==================");
-
-      let errorMessage = "Minting failed";
-      if (err.code === 4001 || err.message?.includes("user rejected")) {
-        errorMessage = "Transaction rejected by user";
-      } else if (err.message?.includes("insufficient funds")) {
-        errorMessage = "Insufficient funds for transaction";
-      } else if (err.message?.includes("execution reverted")) {
-        errorMessage = "Contract execution failed - please try again";
-      } else if (err.message?.includes("network")) {
-        errorMessage = "Network error - please check your connection";
-      } else if (err.message?.includes("Contract address not configured")) {
-        errorMessage = "Configuration error - please contact support";
-      } else if (err.message?.includes("No wallet address")) {
-        errorMessage = "Please connect your wallet first";
-      } else if (err.message) {
-        errorMessage = err.message;
-      }
-
-      toast.error(errorMessage);
-      setStateMessage("");
-    } finally {
-      setIsMinting(false);
-      setIsLoading(false);
-    }
   };
 
   if (isLoading) {
@@ -431,52 +363,82 @@ function SealVibePageContent() {
           )}
 
           <div className="flex justify-center mt-4 space-x-4">
-            <button
-              disabled={!metadataUrl}
-              onClick={() => handleMintMemory(metadataUrl)}
-              className="bg-green-500 text-white px-8 py-3 rounded-lg disabled:opacity-50"
-            >
-              Mint Memory
-            </button>
-            <button
-              onClick={async () => {
-                try {
-                  const wallet = sequence.getWallet();
-                  console.log(
-                    "Test: Wallet isConnected:",
-                    wallet.isConnected()
-                  );
-                  console.log(
-                    "Test: Sequence wallet initialized:",
-                    !!sequence.getWallet()
-                  );
-                  const connectDetails = await wallet.connect({
-                    app: "TouchGrass",
-                    authorize: true,
-                  });
-                  if (connectDetails.connected) {
-                    const address = await wallet.getAddress();
-                    console.log("Test: Wallet address:", address);
-                    toast.success(
-                      `Connected: ${address.slice(0, 6)}...${address.slice(-4)}`
-                    );
-                  } else {
-                    throw new Error(
-                      connectDetails.error || "Connection failed"
-                    );
-                  }
-                } catch (err) {
-                  console.error(
-                    "Test connect error:",
-                    JSON.stringify(err, null, 2)
-                  );
-                  toast.error("Failed to connect wallet");
-                }
-              }}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Test Wallet Connection
-            </button>
+            <div className="text-white p-6 space-y-4">
+              {/* Connect / Disconnect Button */}
+              {!isConnected ? (
+                <button
+                  onClick={() => connect({ connector: connectors[0] })}
+                  className="bg-blue-500 px-4 py-2 rounded"
+                >
+                  Connect Sequence Wallet
+                </button>
+              ) : (
+                <button
+                  onClick={() => disconnect()}
+                  className="bg-red-500 px-4 py-2 rounded"
+                >
+                  Disconnect ({address?.slice(0, 6)}…{address?.slice(-4)})
+                </button>
+              )}
+
+              {/* Mint Button */}
+              {isConnected && (
+                <button
+                  onClick={() => mintNFT(metadataUrl)}
+                  disabled={isPending || isConfirming || !metadataUrl}
+                  className={` px-6 py-3 rounded text-lg ${
+                    !metadataUrl || isPending || isConfirming
+                      ? "bg-gray-400 text-gray-200"
+                      : "bg-green-500 text-white cursor-pointer"
+                  }`}
+                >
+                  {isPending
+                    ? "Preparing..."
+                    : isConfirming
+                    ? "Minting..."
+                    : "Mint NFT"}
+                </button>
+              )}
+
+              {/* Status Messages */}
+              {txHash && (
+                <p className="text-yellow-400 break-words">
+                  📝 Tx Submitted:{" "}
+                  <a
+                    href={`https://sepolia.basescan.org/tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-blue-400"
+                  >
+                    {txHash}
+                  </a>
+                </p>
+              )}
+
+              {isSuccess && receipt && (
+                <div className="text-green-400 space-y-2">
+                  <p>✅ NFT minted successfully!</p>
+                  <p>
+                    ⛓ Block:{" "}
+                    <span className="font-mono">{receipt.blockNumber}</span>
+                  </p>
+                  <p>
+                    👤 Minter:{" "}
+                    <span className="font-mono">
+                      {receipt.from?.slice(0, 10)}...
+                    </span>
+                  </p>
+                </div>
+              )}
+
+              {writeError && (
+                <p className="text-red-400">❌ Error: {writeError.message}</p>
+              )}
+
+              {connectError && (
+                <p className="text-red-400">❌ {connectError.message}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
