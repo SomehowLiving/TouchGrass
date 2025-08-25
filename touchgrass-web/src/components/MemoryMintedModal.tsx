@@ -17,7 +17,7 @@ const MemoryMintedModal: React.FC<MemoryMintedModalProps> = ({
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm text-center relative">
         <button
-          onClick={onClose}
+          onClick={() => onClose()}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
         >
           <svg
