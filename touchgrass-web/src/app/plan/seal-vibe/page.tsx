@@ -80,12 +80,21 @@ function SealVibePageContent() {
       toast.error("Invalid metadata URL format - must be ipfs:// URL");
       return;
     }
-    writeContract({
-      address: "0x35AcB41e1c3a0B35478ce9d01FC1aa45E15416E2", // contract address
-      abi: CliqueNFT,
-      functionName: "mintClique",
-      args: [metadataUrl],
-    });
+    try {
+      writeContract({
+        address: "0x35AcB41e1c3a0B35478ce9d01FC1aa45E15416E2", // contract address
+        abi: CliqueNFT,
+        functionName: "mintClique",
+        args: [metadataUrl],
+      });
+      if (isSuccess && receipt) {
+        setShowModal(true);
+      } else {
+        setShowModal(false);
+      }
+    } catch (error) {
+      toast.error("Error occurred, Please try again");
+    }
   };
 
   useEffect(() => {
@@ -120,6 +129,16 @@ function SealVibePageContent() {
 
     fetchData();
   }, [cliqueId, walletAddress]);
+  useEffect(() => {
+    if (isSuccess && receipt) {
+      setShowModal(true);
+      setIsMinting(false);
+    }
+  }, [isSuccess, receipt]);
+
+  const handleModalClose = () => {
+    setShowModal(false);
+  };
 
   const handleShare = () => {
     const shareLink = `${window.location.origin}/plan/share?id=${cliqueId}`;
@@ -389,7 +408,7 @@ function SealVibePageContent() {
                   className={` px-6 py-3 rounded text-lg ${
                     !metadataUrl || isPending || isConfirming
                       ? "bg-gray-400 text-gray-200"
-                      : "bg-green-500 text-white cursor-pointer"
+                      : "bg-green-500 text-white"
                   }`}
                 >
                   {isPending
@@ -442,11 +461,9 @@ function SealVibePageContent() {
           </div>
         </div>
       </div>
-
-      <MemoryMintedModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-      />
+      {receipt ? (
+        <MemoryMintedModal isOpen={showModal} onClose={handleModalClose} />
+      ) : null}
     </>
   );
 }
