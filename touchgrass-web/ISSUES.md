@@ -13,6 +13,6 @@ I didn’t have enough time to polish the UI to the level I wanted, and the chat
 
 Here’s the proof of a successful minting transaction:
 
-![Transaction Proof](https://github.com/SomehowLiving/TouchGrass/tree/main/touchgrass-web/public/public/mintProof/transactionProof.png?raw=true)
+![Transaction Proof](https://github.com/SomehowLiving/TouchGrass/blob/main/touchgrass-web/public/mintProof/transactionProof.png?raw=true)
 
 🔗 [View on Block Explorer](https://sepolia.basescan.org/tx/0x595d82f22d7bb41d07ab4a650f1b5a3eb09aa7e8ec4bac39b1173ac96d10786e)
