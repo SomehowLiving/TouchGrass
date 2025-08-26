@@ -1,4 +1,4 @@
-# TouchGrass - The Proof Layer for Real Life
+t# TouchGrass - The Proof Layer for Real Life
 
 > "Meet IRL. Mint Forever." - Create verifiable, collaborative memories from real-world social connections.
 
@@ -136,14 +136,6 @@ MVP Features:
 └── Cultural Feed Integration
 ```
 
-### **Key MVP Decisions:**
-- **Single GPS Oracle**: Simpler implementation, you control verification
-- **Backend Relayer**: True gasless experience without complex paymaster
-- **Basic Spam Prevention**: 30-second cooldowns prevent abuse
-- **Emergency Controls**: Pause functionality for critical issues
-
----
-
 ## 💡 MVP vs Advanced Feature Comparison
 
 | Feature Category | MVP Implementation | Advanced Implementation (Future) |
@@ -182,37 +174,21 @@ MVP Features:
 ---
 
 ## 🛠 MVP Technology Stack
+### Frontend tech stack (Mobile reponsive)
 
-### **Frontend (Mobile-First)**
-- **React Native + Expo**: Cross-platform mobile development
-- **Sequence Wallet SDK**: Invisible Web3 wallet creation
-- **React Query**: Efficient data fetching and caching
-- **Expo Camera**: Photo capture with metadata
-- **Expo Location**: GPS coordinates and geofencing
-- **AsyncStorage**: Local data persistence
+- NextJs15 
+- Tailwindcss 
+- Local storage and context API for local data persistence 
+- Sequence wallet SDK + Wagmi
 
-### **Backend Services**
-- **Node.js + Express**: RESTful API server
-- **TypeScript**: Type-safe development
-- **PostgreSQL + Prisma or MongoDB**: Database with type-safe ORM
-- **Redis**: Session management and caching
-- **Socket.io**: Real-time collaboration
-- **Multer + Sharp**: Image processing
-- **Node Cron**: Scheduled tasks
+### Backend
+- NextJS 15 (through API/route.ts pattern) - API server
+- Typescript 
+- Database - MongoDB
 
-### **Blockchain Infrastructure**
-- **Base L2**: Low-cost, fast transactions
-- **Hardhat**: Smart contract development
-- **Ethers.js**: Blockchain interactions
-- **The Graph**: Event indexing (future)
-- **OpenZeppelin**: Security-audited contracts
-
-### **External Services**
-- **IPFS (Pinata)**: Decentralized metadata storage
-- **Expo Push Notifications**: Mobile notifications
-- **Sentry**: Error monitoring
-- **Vercel**: Frontend hosting
-- **Railway**: Backend hosting
+### External service: 
+- IPFS
+- Vercel for both frontend and backend hosting
 
 ---
 
@@ -517,7 +493,7 @@ Cost per active user: ~$0.145
 ### **Development Resources**
 - **GitHub**: [github.com/touchgrass/mvp](https://github.com/SomehowLiving/TouchGrass)
 - **Base Testnet Faucet**: [faucet.quicknode.com/base/sepolia](https://faucet.quicknode.com/base/sepolia)
-- **Contract Addresses**: [Coming after deployment]
+- **Contract Addresses**: [0x35AcB41e1c3a0B35478ce9d01FC1aa45E15416E2]
 
 ### **Community**
 - **Twitter**: [@touchgrass_app](https://x.com/just_touchgrass)
@@ -600,4 +576,3 @@ A: Location coordinates are stored encrypted in our database and only used for g
 
 **TouchGrass MVP - Building authentic human connections in the Web3 era, one IRL moment at a time.** 🌱
 
-*Last updated: 9 August 2025*
