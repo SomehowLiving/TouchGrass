@@ -145,7 +145,7 @@ All Friends Verified → Finalize Memory → Mint Collaborative NFT → Share to
 
 - Advanced NFT Features: Time-decay traits, location-based unlocks
   
--Community Governance: Empowering our users with on-chain control
+- Community Governance: Empowering our users with on-chain control
 
 - Cross-Chain Support: Polygon, Arbitrum, and Optimism compatibility
 
