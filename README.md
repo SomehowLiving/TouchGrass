@@ -122,7 +122,7 @@ All Friends Verified → Finalize Memory → Mint Collaborative NFT → Share to
 
 ### **Community**
 - **Twitter**: [@touchgrass_app](https://x.com/just_touchgrass)
-- **Feedback Form**: [feedback.touchgrass.xyz](https://tinyurl.com/touchgrass-feedback)
+- **Feedback Form**: [tinyurl.com/touchgrass-feedback](https://tinyurl.com/touchgrass-feedback)
 
 ---
 ### **Future Roadmap**
