@@ -111,6 +111,9 @@ All Friends Verified → Finalize Memory → Mint Collaborative NFT → Share to
 - IPFS
 - Vercel for both frontend and backend hosting
 
+### Blockchain
+- Base L2
+
 ---
 
 
